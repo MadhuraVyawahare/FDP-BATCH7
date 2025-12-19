@@ -1,110 +1,63 @@
 const form = document.getElementById('contactForm');
 const successMessage = document.getElementById('successMessage');
+const errorMessage = document.getElementById('errorMessage');
 
-// Validation functions
-const validators = {
-    firstName: (value) => value.trim() !== '',
-    lastName: (value) => value.trim() !== '',
-    email: (value) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(value);
-    },
-    phone: (value) => {
-        if (value === '') return true; // Optional field
-        const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-        return phoneRegex.test(value) && value.length >= 10;
-    },
-    subject: (value) => value !== '',
-    message: (value) => value.trim().length >= 10,
-    terms: (value) => value === true
-};
-
-// Show error message
-function showError(fieldName) {
-    const errorElement = document.getElementById(`${fieldName}Error`);
-    if (errorElement) {
-        errorElement.classList.add('show');
-    }
-}
-
-// Hide error message
-function hideError(fieldName) {
-    const errorElement = document.getElementById(`${fieldName}Error`);
-    if (errorElement) {
-        errorElement.classList.remove('show');
-    }
-}
-
-// Validate single field
-function validateField(fieldName) {
-    const field = document.getElementById(fieldName);
-    let value = field.value;
-
-    if (field.type === 'checkbox') {
-        value = field.checked;
-    }
-
-    const isValid = validators[fieldName](value);
-
-    if (!isValid) {
-        showError(fieldName);
-        return false;
-    } else {
-        hideError(fieldName);
-        return true;
-    }
-}
-
-// Real-time validation
-const inputFields = ['firstName', 'lastName', 'email', 'phone', 'subject', 'message', 'terms'];
-inputFields.forEach(fieldName => {
-    const field = document.getElementById(fieldName);
-    if (field) {
-        field.addEventListener('blur', () => validateField(fieldName));
-        field.addEventListener('change', () => validateField(fieldName));
-    }
-});
-
-// Form submission
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Validate all fields
-    let isFormValid = true;
-    inputFields.forEach(fieldName => {
-        if (!validateField(fieldName)) {
-            isFormValid = false;
-        }
-    });
+    // Validate form
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const subject = document.getElementById('subject').value;
+    const message = document.getElementById('message').value.trim();
 
-    if (isFormValid) {
-        // Simulate form submission
-        console.log('Form Data:', {
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            subject: document.getElementById('subject').value,
-            message: document.getElementById('message').value,
-            terms: document.getElementById('terms').checked
-        });
+    // Hide messages
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'none';
 
-        // Show success message
-        successMessage.classList.add('show');
-
-        // Reset form
-        form.reset();
-
-        // Hide success message after 5 seconds
-        setTimeout(() => {
-            successMessage.classList.remove('show');
-        }, 5000);
+    // Check if all required fields are filled
+    if (!firstName || !lastName || !email || !subject || !message) {
+        errorMessage.style.display = 'block';
+        return;
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        errorMessage.textContent = '✗ Please enter a valid email address.';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    // Show success message
+    successMessage.style.display = 'block';
+
+    // Get form data for display
+    const phone = document.getElementById('phone').value || 'Not provided';
+    const subscribe = document.getElementById('subscribe').checked ? 'Yes' : 'No';
+
+    console.log('Form Data:');
+    console.log(`Name: ${firstName} ${lastName}`);
+    console.log(`Email: ${email}`);
+    console.log(`Phone: ${phone}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Message: ${message}`);
+    console.log(`Subscribe: ${subscribe}`);
+
+    // Reset form after 2 seconds
+    setTimeout(() => {
+        form.reset();
+        successMessage.style.display = 'none';
+    }, 3000);
 });
 
-// Reset button clears errors
-form.addEventListener('reset', () => {
-    inputFields.forEach(fieldName => {
-        hideError(fieldName);
-    });
+// Add real-time validation for email
+document.getElementById('email').addEventListener('blur', function() {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (this.value && !emailRegex.test(this.value)) {
+        this.style.borderColor = '#f44336';
+    } else {
+        this.style.borderColor = '#e0e0e0';
+    }
 });
